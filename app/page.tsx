@@ -1,65 +1,140 @@
-import Image from "next/image";
+// app/page.tsx
+'use client'
 
-export default function Home() {
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
+import { getUserId } from '@/lib/utils/userId'
+import { generateRoomCode } from '@/lib/utils/roomCode'
+
+export default function HomePage() {
+  const router = useRouter()
+  const [joinCode, setJoinCode] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleCreateRoom() {
+    setLoading(true)
+    setError('')
+
+    const userId = getUserId()
+    const code = generateRoomCode()
+
+    // Insert room + self as player
+    const { data: room, error: roomErr } = await supabase
+      .from('rooms')
+      .insert({ code, status: 'waiting', total_questions: 5 })
+      .select()
+      .single()
+
+    if (roomErr || !room) {
+      setError('创建房间失败，请重试')
+      setLoading(false)
+      return
+    }
+
+    const { error: playerErr } = await supabase.from('players').insert({
+      room_id: room.id,
+      user_id: userId,
+    })
+
+    if (playerErr) {
+      setError('加入房间失败，请重试')
+      setLoading(false)
+      return
+    }
+
+    router.push(`/room/${room.id}`)
+  }
+
+  async function handleJoinRoom() {
+    if (!joinCode.trim()) return
+    setLoading(true)
+    setError('')
+
+    // Find room by code
+    const { data: room, error: roomErr } = await supabase
+      .from('rooms')
+      .select()
+      .eq('code', joinCode.toUpperCase())
+      .single()
+
+    if (roomErr || !room) {
+      setError('房间不存在')
+      setLoading(false)
+      return
+    }
+
+    if (room.status !== 'waiting') {
+      setError('游戏已开始或已结束')
+      setLoading(false)
+      return
+    }
+
+    const userId = getUserId()
+
+    const { error: playerErr } = await supabase.from('players').insert({
+      room_id: room.id,
+      user_id: userId,
+    })
+
+    if (playerErr) {
+      setError('加入房间失败')
+      setLoading(false)
+      return
+    }
+
+    router.push(`/room/${room.id}`)
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen flex items-center justify-center bg-white">
+      <div className="text-center">
+        <h1
+          className="text-[96px] font-black leading-[0.85] mb-6"
+          style={{ fontFamily: 'Inter, sans-serif', letterSpacing: '-0.02em' }}
+        >
+          MatchMatch
+        </h1>
+        <p className="text-lg text-[#868685] mb-12">
+          看看你和朋友的默契程度
+        </p>
+
+        <button
+          onClick={handleCreateRoom}
+          disabled={loading}
+          className="w-full max-w-[280px] py-4 px-6 rounded-full text-[18px] font-semibold transition-transform"
+          style={{
+            background: '#9fe870',
+            color: '#163300',
+          }}
+        >
+          {loading ? '创建中...' : '创建房间'}
+        </button>
+
+        <div className="mt-8 text-[#868685] text-sm">或</div>
+
+        <div className="mt-6">
+          <input
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            placeholder="输入房间号"
+            maxLength={6}
+            className="w-full max-w-[200px] px-4 py-3 text-center text-lg tracking-widest border border-[rgba(14,15,12,0.12)] rounded-xl"
+          />
+          <button
+            onClick={handleJoinRoom}
+            disabled={loading || !joinCode.trim()}
+            className="mt-3 w-full max-w-[200px] py-3 px-6 rounded-full text-[18px] font-semibold transition-transform border border-[rgba(14,15,12,0.12)]"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            加入
+          </button>
         </div>
-      </main>
-    </div>
-  );
+
+        {error && (
+          <p className="mt-4 text-[#d03238] text-sm">{error}</p>
+        )}
+      </div>
+    </main>
+  )
 }
