@@ -38,28 +38,39 @@ export default function RoomPage({
 
     // Load room and self
     async function init() {
-      const { data: room } = await supabase
+      console.log('[RoomPage] init start, roomId:', roomId, 'userId:', userId)
+
+      const { data: room, error: roomError } = await supabase
         .from('rooms')
         .select('*')
         .eq('id', roomId)
         .single()
 
-      if (!room) {
+      console.log('[RoomPage] room query result:', { room, roomError })
+
+      if (roomError || !room) {
+        console.log('[RoomPage] room not found or error, redirecting to /', { roomError })
         router.push('/')
         return
       }
 
       setRoom(room)
 
-      const { data: players } = await supabase
+      const { data: players, error: playersError } = await supabase
         .from('players')
         .select('*')
         .eq('room_id', roomId)
 
-      if (!players) return
+      console.log('[RoomPage] players query result:', { players, playersError, userId })
+
+      if (playersError || !players) {
+        console.log('[RoomPage] players query failed:', { playersError })
+        return
+      }
 
       const me = players.find((p) => p.user_id === userId)
       if (!me) {
+        console.log('[RoomPage] me not found in players, redirecting to /')
         router.push('/')
         return
       }
@@ -140,6 +151,15 @@ export default function RoomPage({
 
   return (
     <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+      {/* Debug overlay */}
+      <div className="fixed top-0 left-0 bg-black text-white text-xs p-2 z-50 font-mono max-w-full overflow-auto">
+        <div>roomId: <span className="text-[#9fe870]">{roomId}</span></div>
+        <div>userId: <span className="text-[#9fe870]">{userId}</span></div>
+        <div>roomStatus: <span className="text-[#9fe870]">{roomStatus}</span></div>
+        <div>myPlayerId: <span className="text-[#9fe870]">{myPlayerId}</span></div>
+        <div>questions: <span className="text-[#9fe870]">{questions.length}</span></div>
+      </div>
+
       {roomStatus === 'waiting' && <WaitingRoom />}
 
       {roomStatus === 'playing' && (
