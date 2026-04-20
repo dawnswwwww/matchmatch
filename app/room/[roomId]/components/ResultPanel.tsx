@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameStore } from '@/lib/stores/gameStore'
 import { calculateScore, getScoreLabel } from '@/lib/utils/score'
-import ScoreDisplay from '../result/[resultId]/components/ScoreDisplay'
-import ComparisonList from '../result/[resultId]/components/ComparisonList'
+import ScoreDisplay from '../../../result/[resultId]/components/ScoreDisplay'
+import ComparisonList from '../../../result/[resultId]/components/ComparisonList'
 
 export default function ResultPanel() {
   const router = useRouter()
