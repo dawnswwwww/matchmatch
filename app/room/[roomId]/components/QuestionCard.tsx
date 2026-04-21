@@ -1,14 +1,13 @@
-// app/room/[roomId]/components/QuestionCard.tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useGameStore } from '@/lib/stores/gameStore'
 import OptionButton from './OptionButton'
 
 export default function QuestionCard() {
   const { currentQuestion, questions, myAnswers, opponentAnswers, roomId } = useGameStore()
-  const [locked, setLocked] = useState(false)
+  const [entered, setEntered] = useState(false)
 
   const question = questions[currentQuestion]
   if (!question) return null
@@ -16,15 +15,21 @@ export default function QuestionCard() {
   const myAnswer = myAnswers[currentQuestion]
   const opponentAnswer = opponentAnswers[currentQuestion]
   const bothAnswered = !!myAnswer && !!opponentAnswer
+  const opponentSelected = !!opponentAnswer
+
+  // Animate in on question change
+  useEffect(() => {
+    setEntered(false)
+    const t = setTimeout(() => setEntered(true), 50)
+    return () => clearTimeout(t)
+  }, [currentQuestion])
 
   async function handleSelect(choice: 'a' | 'b') {
-    if (locked) return
-    setLocked(true)
+    if (bothAnswered) return
 
     useGameStore.getState().submitMyAnswer(currentQuestion, choice)
 
-    // Insert answer to DB
-    const { myPlayerId } = useGameStore.getState()
+    const { myPlayerId, myUserId } = useGameStore.getState()
     await supabase.from('answers').insert({
       room_id: roomId,
       player_id: myPlayerId,
@@ -32,8 +37,6 @@ export default function QuestionCard() {
       choice,
     })
 
-    // Broadcast to opponent
-    const { myUserId } = useGameStore.getState()
     await supabase.channel(`room:${roomId}`).send({
       type: 'broadcast',
       event: 'answer_submitted',
@@ -41,18 +44,32 @@ export default function QuestionCard() {
     })
   }
 
-  // After both answered, show result then auto-advance
-  const opponentSelected = !!opponentAnswer
-
   return (
-    <div className="w-full">
-      <p className="text-xl font-semibold mb-6 text-center">{question.text}</p>
-      <div className="flex flex-col gap-3">
+    <div
+      className={`
+        w-full flex flex-col gap-[var(--space-6)]
+        transition-all duration-[var(--duration-slow)]
+        ${entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+      `}
+      style={{
+        transitionTimingFunction: 'var(--ease-out-quart)',
+      }}
+    >
+      {/* Question text */}
+      <p
+        className="text-[clamp(20px,4vw,26px)] font-bold text-center leading-tight"
+        style={{ color: 'var(--foreground)' }}
+      >
+        {question.text}
+      </p>
+
+      {/* Options */}
+      <div className="flex flex-col gap-[var(--space-3)]">
         <OptionButton
           label="A"
           text={question.option_a}
           selected={myAnswer === 'a'}
-          locked={locked || bothAnswered}
+          locked={!!myAnswer || bothAnswered}
           opponentSelected={opponentSelected && opponentAnswer === 'a'}
           isCorrect={opponentAnswer === 'a'}
           onClick={() => handleSelect('a')}
@@ -61,7 +78,7 @@ export default function QuestionCard() {
           label="B"
           text={question.option_b}
           selected={myAnswer === 'b'}
-          locked={locked || bothAnswered}
+          locked={!!myAnswer || bothAnswered}
           opponentSelected={opponentSelected && opponentAnswer === 'b'}
           isCorrect={opponentAnswer === 'b'}
           onClick={() => handleSelect('b')}

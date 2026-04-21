@@ -1,0 +1,6 @@
+{
+  "enabledPlugins": {
+    "jobs-to-be-done@pm-skills": true,
+    "superpowers@claude-plugins-official": true
+  }
+}

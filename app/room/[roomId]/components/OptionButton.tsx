@@ -1,5 +1,6 @@
-// app/room/[roomId]/components/OptionButton.tsx
 'use client'
+
+import { useState } from 'react'
 
 interface OptionButtonProps {
   label: 'A' | 'B'
@@ -20,26 +21,105 @@ export default function OptionButton({
   isCorrect,
   onClick,
 }: OptionButtonProps) {
-  const baseStyle = 'w-full py-5 px-6 rounded-2xl border-2 text-left transition-all font-semibold text-[18px]'
-  const disabledStyle = locked && !selected ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+  const [pressed, setPressed] = useState(false)
+  const [hovered, setHovered] = useState(false)
 
-  let borderStyle = 'border-[rgba(14,15,12,0.12)]'
-  if (selected && !locked) borderStyle = 'border-[#9fe870] bg-[#9fe870]/10'
-  if (selected && locked) borderStyle = isCorrect ? 'border-[#9fe870] bg-[#9fe870]/20' : 'border-[#d03238] bg-[#d03238]/10'
-  if (!selected && locked && opponentSelected && isCorrect) borderStyle = 'border-[#9fe870] bg-[#9fe870]/10'
+  // Determine visual state
+  const isLocked = locked && !selected
+  const isMySelected = selected && !locked
+  const isMySelectedAndLocked = selected && locked
+  const isOpponentCorrectOnMyButton = !selected && locked && opponentSelected && isCorrect
 
   return (
     <button
       onClick={onClick}
       disabled={locked}
-      className={`${baseStyle} ${borderStyle} ${disabledStyle}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setPressed(false) }}
+      onMouseDown={() => setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      className={`
+        w-full py-[var(--space-5)] px-[var(--space-5)]
+        rounded-2xl border-2 font-semibold text-base text-left
+        transition-all duration-[var(--duration-base)]
+        flex items-center gap-[var(--space-3)]
+        select-none
+        disabled:cursor-not-allowed
+      `}
+      style={{
+        // Base border
+        borderColor: selected
+          ? 'var(--green)'
+          : isOpponentCorrectOnMyButton
+          ? 'var(--green)'
+          : 'var(--surface)',
+        // Background
+        background: selected
+          ? 'oklch(86% 0.08 122 / 0.08)'
+          : isOpponentCorrectOnMyButton
+          ? 'oklch(86% 0.08 122 / 0.04)'
+          : 'var(--surface)',
+        // Scale transforms
+        transform: pressed && !locked
+          ? 'scale(0.97)'
+          : hovered && !locked
+          ? 'scale(1.015)'
+          : 'scale(1)',
+        // Opacity for locked non-selected
+        opacity: isLocked ? 0.45 : 1,
+        // Transition easing
+        transitionTimingFunction: 'var(--ease-out-quart)',
+      }}
     >
-      <span className={`inline-block w-8 h-8 rounded-full text-center leading-8 mr-3 text-sm ${
-        selected ? 'bg-[#9fe870] text-[#163300]' : 'bg-[rgba(14,15,12,0.08)]'
-      }`}>
+      {/* Label badge */}
+      <span
+        className="
+          inline-flex items-center justify-center
+          w-8 h-8 rounded-full text-sm font-bold
+          flex-shrink-0 transition-all duration-[var(--duration-base)]
+        "
+        style={{
+          background: selected
+            ? 'var(--green)'
+            : 'oklch(50% 0 0 / 0.08)',
+          color: selected
+            ? 'var(--green-dark)'
+            : 'var(--gray)',
+          transform: pressed && !locked ? 'scale(0.92)' : 'scale(1)',
+        }}
+      >
         {label}
       </span>
-      {text}
+
+      {/* Option text */}
+      <span
+        className="leading-snug"
+        style={{
+          color: selected ? 'var(--foreground)' : 'var(--foreground)',
+        }}
+      >
+        {text}
+      </span>
+
+      {/* Match indicator — shown when opponent got it right on this option */}
+      {isOpponentCorrectOnMyButton && (
+        <span
+          className="ml-auto text-xs font-semibold flex-shrink-0 animate-scale-in"
+          style={{ color: 'var(--green-dark)' }}
+        >
+          ✓
+        </span>
+      )}
+
+      {/* My answer locked indicator */}
+      {isMySelectedAndLocked && (
+        <span
+          className="ml-auto text-xs font-semibold flex-shrink-0 animate-scale-in"
+          style={{ color: isCorrect ? 'var(--green-dark)' : '#d03238' }}
+        >
+          {isCorrect ? '✓ 匹配' : '✗'}
+        </span>
+      )}
     </button>
   )
 }

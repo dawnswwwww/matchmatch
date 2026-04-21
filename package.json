@@ -6,21 +6,37 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:vinext": "vinext dev --port 3001",
+    "build:vinext": "vinext build",
+    "start:vinext": "vinext start",
+    "deploy:vinext": "vinext deploy"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.103.3",
+    "canvas-confetti": "^1.9.4",
     "next": "16.2.3",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.33.0",
     "@tailwindcss/postcss": "^4",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-rsc": "^0.5.24",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
+    "react-server-dom-webpack": "^19.2.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+    "typescript": "^5",
+    "vinext": "^0.0.41",
+    "vite": "^8.0.8",
+    "wrangler": "^4.84.0"
+  },
+  "type": "module"
 }
