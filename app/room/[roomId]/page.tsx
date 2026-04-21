@@ -1,4 +1,3 @@
-// app/room/[roomId]/page.tsx
 'use client'
 
 import { use, useEffect } from 'react'
@@ -6,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { getUserId } from '@/lib/utils/userId'
 import { useGameStore } from '@/lib/stores/gameStore'
+import { getLocalQuestionsBySetId } from '@/lib/questions/adapter'
 import WaitingRoom from './components/WaitingRoom'
 import QuestionCard from './components/QuestionCard'
 import SyncIndicator from './components/SyncIndicator'
@@ -24,7 +24,6 @@ export default function RoomPage({
 
   const {
     roomStatus,
-    myPlayerId,
     currentQuestion,
     questions,
     setRoom,
@@ -36,46 +35,48 @@ export default function RoomPage({
   useEffect(() => {
     reset()
 
-    // Load room and self
     async function init() {
-      console.log('[RoomPage] init start, roomId:', roomId, 'userId:', userId)
-
       const { data: room, error: roomError } = await supabase
         .from('rooms')
         .select('*')
         .eq('id', roomId)
         .single()
 
-      console.log('[RoomPage] room query result:', { room, roomError })
-
       if (roomError || !room) {
-        console.log('[RoomPage] room not found or error, redirecting to /', { roomError })
         router.push('/')
         return
       }
 
       setRoom(room)
 
+      // 优先从本地题库加载，fallback 到 Supabase
+      const localQuestions = getLocalQuestionsBySetId(room.question_set_id || 'default')
+      if (localQuestions) {
+        useGameStore.getState().setQuestions(localQuestions)
+      } else if (room.question_set_id) {
+        const { data } = await supabase
+          .from('questions')
+          .select('*')
+          .eq('question_set_id', room.question_set_id)
+          .order('display_order')
+        if (data) {
+          useGameStore.getState().setQuestions(data)
+        }
+      }
+
       const { data: players, error: playersError } = await supabase
         .from('players')
         .select('*')
         .eq('room_id', roomId)
 
-      console.log('[RoomPage] players query result:', { players, playersError, userId })
-
-      if (playersError || !players) {
-        console.log('[RoomPage] players query failed:', { playersError })
-        return
-      }
+      if (playersError || !players) return
 
       const me = players.find((p) => p.user_id === userId)
       if (!me) {
-        console.log('[RoomPage] me not found in players, redirecting to /')
         router.push('/')
         return
       }
 
-      // Store myPlayerId in store via a setter — add it to store
       useGameStore.setState({ myPlayerId: me.id, myUserId: userId })
 
       const opponent = players.find((p) => p.user_id !== userId)
@@ -92,7 +93,7 @@ export default function RoomPage({
     const channel = supabase.channel(`room:${roomId}`)
 
     channel
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'players' }, (payload) => {
         if (payload.eventType === 'INSERT') {
           const newPlayer = payload.new as { id: string; user_id: string }
           if (newPlayer.user_id !== userId) {
@@ -100,7 +101,7 @@ export default function RoomPage({
           }
         }
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms' }, (payload) => {
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const updated = payload.new as { status: string; current_question: number }
         setRoomStatus(updated.status as 'waiting' | 'playing' | 'finished' | 'expired')
         if ('current_question' in updated) {
@@ -110,6 +111,16 @@ export default function RoomPage({
       .on('broadcast', { event: 'answer_submitted' }, ({ payload }) => {
         if (payload.userId !== userId) {
           useGameStore.getState().setOpponentAnswer(payload.questionIndex, payload.choice)
+
+          // If both players have answered this question, trigger advance to next question
+          const { myAnswers } = useGameStore.getState()
+          if (myAnswers[payload.questionIndex] !== undefined) {
+            fetch('/api/advance-question', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ roomId, questionIndex: payload.questionIndex }),
+            })
+          }
         }
       })
       .on('broadcast', { event: 'question_result' }, ({ payload }) => {
@@ -133,14 +144,30 @@ export default function RoomPage({
 
   if (roomStatus === 'expired') {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-white">
-        <div className="text-center">
-          <h2 className="text-4xl font-black mb-4">房间已过期</h2>
-          <p className="text-[#868685] mb-6">3 分钟内无人加入，请重新创建房间</p>
+      <main className="min-h-screen bg-[var(--background)] flex items-center justify-center px-[var(--space-6)]">
+        <div className="text-center flex flex-col items-center gap-[var(--space-4)] max-w-sm">
+          <div
+            className="text-5xl font-black leading-tight mb-[var(--space-2)]"
+            style={{ fontFamily: 'Inter, sans-serif', color: 'var(--foreground)' }}
+          >
+            房间已过期
+          </div>
+          <p className="text-base" style={{ color: 'var(--gray)' }}>
+            3 分钟内无人加入，请重新创建房间
+          </p>
           <button
             onClick={() => router.push('/')}
-            className="px-8 py-3 rounded-full font-semibold"
-            style={{ background: '#9fe870', color: '#163300' }}
+            className="
+              mt-[var(--space-4)]
+              py-[var(--space-3)] px-[var(--space-8)]
+              rounded-full font-semibold text-base
+              transition-all duration-[var(--duration-base)]
+            "
+            style={{ background: 'var(--green)', color: 'var(--green-dark)' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
+            onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.97)' }}
+            onMouseUp={e => { e.currentTarget.style.transform = 'scale(1.04)' }}
           >
             返回首页
           </button>
@@ -150,28 +177,31 @@ export default function RoomPage({
   }
 
   return (
-    <main className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
-      {/* Debug overlay */}
-      <div className="fixed top-0 left-0 bg-black text-white text-xs p-2 z-50 font-mono max-w-full overflow-auto">
-        <div>roomId: <span className="text-[#9fe870]">{roomId}</span></div>
-        <div>userId: <span className="text-[#9fe870]">{userId}</span></div>
-        <div>roomStatus: <span className="text-[#9fe870]">{roomStatus}</span></div>
-        <div>myPlayerId: <span className="text-[#9fe870]">{myPlayerId}</span></div>
-        <div>questions: <span className="text-[#9fe870]">{questions.length}</span></div>
-      </div>
-
-      {roomStatus === 'waiting' && <WaitingRoom />}
+    <main
+      className="
+        min-h-screen bg-[var(--background)]
+        flex flex-col items-center justify-center
+        px-[var(--space-6)] py-[var(--space-12)]
+      "
+    >
+      {roomStatus === 'waiting' && (
+        <div className="w-full max-w-md">
+          <WaitingRoom />
+        </div>
+      )}
 
       {roomStatus === 'playing' && (
-        <div className="w-full max-w-md flex flex-col items-center gap-6">
+        <div className="w-full max-w-md flex flex-col items-center gap-[var(--space-8)]">
           <ProgressBar current={currentQuestion + 1} total={questions.length || 5} />
-          <QuestionCard />
+          <div className="w-full">
+            <QuestionCard />
+          </div>
           <SyncIndicator />
         </div>
       )}
 
       {roomStatus === 'finished' && (
-        <div className="w-full max-w-md flex flex-col items-center gap-6">
+        <div className="w-full max-w-md flex flex-col items-center gap-[var(--space-8)]">
           <ResultPanel />
           <RematchDialog />
         </div>
