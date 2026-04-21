@@ -1,5 +1,4 @@
 // lib/questions/questions.ts
-import { CATEGORIES } from './categories'
 
 export interface StaticQuestion {
   id: string
