@@ -16,6 +16,11 @@
     "enabled": true,
     "head_sampling_rate": 1,
   },
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://yicxktmcprzcredlbhzr.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpY3hrdG1jcHJ6Y3JlZGxiaHpyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzNDM2MjgsImV4cCI6MjA5MTkxOTYyOH0.ZPGfKY8hA4K36gwYPpKo7QajVgZK5OhhdIgL0vbkK9I",
+    "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpY3hrdG1jcHJ6Y3JlZGxiaHpyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjM0MzYyOCwiZXhwIjoyMDkxOTE5NjI4fQ.7lgjygIfkrJJ4Hi70zrQbiu21PgHBCCH6zrxDvScHOY",
+  },
   "env": {
     "production": {
       "name": "matchmatch",
