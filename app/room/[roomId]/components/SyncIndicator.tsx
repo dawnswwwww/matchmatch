@@ -3,8 +3,18 @@
 import { useGameStore } from '@/lib/stores/gameStore'
 
 export default function SyncIndicator() {
-  const { opponentReady, myAnswers, currentQuestion } = useGameStore()
+  const { opponentReady, myAnswers, opponentAnswers, currentQuestion } = useGameStore()
   const myAnswered = !!myAnswers[currentQuestion]
+  const opponentAnswered = !!opponentAnswers[currentQuestion]
+
+  // Opponent has answered but I haven't — prompt me to answer
+  if (!myAnswered && opponentAnswered) {
+    return (
+      <p className="text-sm font-medium animate-fade-in" style={{ color: 'var(--gray)' }}>
+        对方已选择，快选你的答案吧！
+      </p>
+    )
+  }
 
   if (!myAnswered) {
     return (

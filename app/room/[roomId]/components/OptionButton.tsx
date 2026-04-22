@@ -27,7 +27,8 @@ export default function OptionButton({
   // Determine visual state
   const isLocked = locked && !selected
   const isMySelected = selected && !locked
-  const isMySelectedAndLocked = selected && locked
+  // Only show match/mismatch indicator when BOTH have answered
+  const isMySelectedAndLocked = selected && locked && opponentSelected
   const isOpponentCorrectOnMyButton = !selected && locked && opponentSelected && isCorrect
 
   return (
