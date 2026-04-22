@@ -77,11 +77,22 @@ export default function RoomPage({
 
       if (playersError || !players) return
 
-      const me = players.find((p) => p.user_id === userId)
+            let me = players.find((p) => p.user_id === userId)
       if (!me) {
-        router.push('/')
-        return
+        // New player joining via shared link — insert into players table
+        const { data: newPlayer, error: insertError } = await supabase
+          .from('players')
+          .insert({ room_id: roomId, user_id: userId })
+          .select()
+          .single()
+        if (insertError || !newPlayer) {
+          router.push('/')
+          return
+        }
+        me = newPlayer
       }
+
+      useGameStore.setState({ myPlayerId: me.id, myUserId: userId })
 
       useGameStore.setState({ myPlayerId: me.id, myUserId: userId })
 
