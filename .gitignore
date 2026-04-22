@@ -43,7 +43,7 @@ yarn-error.log*
 .wrangler/
 
 # vinext
-/worker/
+# /worker/
 
 # typescript
 *.tsbuildinfo
