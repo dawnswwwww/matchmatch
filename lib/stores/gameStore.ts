@@ -2,7 +2,7 @@
 import { create } from 'zustand'
 import type { Room, Player, Question } from '@/lib/supabase/types'
 
-type RoomStatus = 'waiting' | 'playing' | 'finished' | 'expired'
+type RoomStatus = 'waiting' | 'playing' | 'finished' | 'expired' | 'full'
 
 interface GameState {
   // Room

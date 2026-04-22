@@ -77,8 +77,14 @@ export default function RoomPage({
 
       if (playersError || !players) return
 
-            let me = players.find((p) => p.user_id === userId)
+      let me = players.find((p) => p.user_id === userId)
+
       if (!me) {
+        // Room is full (2 players already) — show friendly message
+        if (players.length >= 2) {
+          useGameStore.setState({ roomStatus: 'full' })
+          return
+        }
         // New player joining via shared link — insert into players table
         const { data: newPlayer, error: insertError } = await supabase
           .from('players')
@@ -91,8 +97,6 @@ export default function RoomPage({
         }
         me = newPlayer
       }
-
-      useGameStore.setState({ myPlayerId: me.id, myUserId: userId })
 
       useGameStore.setState({ myPlayerId: me.id, myUserId: userId })
 
@@ -189,6 +193,40 @@ export default function RoomPage({
             onMouseUp={e => { e.currentTarget.style.transform = 'scale(1.04)' }}
           >
             返回首页
+          </button>
+        </div>
+      </main>
+    )
+  }
+
+  if (roomStatus === 'full') {
+    return (
+      <main className="min-h-screen bg-[var(--background)] flex items-center justify-center px-[var(--space-6)]">
+        <div className="text-center flex flex-col items-center gap-[var(--space-4)] max-w-sm">
+          <div
+            className="text-5xl font-black leading-tight mb-[var(--space-2)]"
+            style={{ fontFamily: 'Inter, sans-serif', color: 'var(--foreground)' }}
+          >
+            房间已满
+          </div>
+          <p className="text-base" style={{ color: 'var(--gray)' }}>
+            该房间已有两位玩家，去创建自己的房间邀请好友吧
+          </p>
+          <button
+            onClick={() => router.push('/')}
+            className="
+              mt-[var(--space-4)]
+              py-[var(--space-3)] px-[var(--space-8)]
+              rounded-full font-semibold text-base
+              transition-all duration-[var(--duration-base)]
+            "
+            style={{ background: 'var(--green)', color: 'var(--green-dark)' }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
+            onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.97)' }}
+            onMouseUp={e => { e.currentTarget.style.transform = 'scale(1.04)' }}
+          >
+            创建房间
           </button>
         </div>
       </main>
