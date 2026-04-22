@@ -98,7 +98,7 @@ export default function ResultClient({ resultId, initialData }: ResultClientProp
         const s = calculateScore(myAnswers, opponentAnswers, room.total_questions)
         const label = getScoreLabel(s)
 
-        const comps = (questions || []).map((q: Question, i: number) => ({
+        const comps = (questions || []).slice(0, room.total_questions).map((q: Question, i: number) => ({
           question: q.text,
           optionA: q.option_a,
           optionB: q.option_b,
