@@ -2,16 +2,26 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "matchmatch",
   "compatibility_date": "2026-04-21",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
+  "compatibility_flags": ["nodejs_compat"],
   "main": "./worker/index.ts",
   "assets": {
     "directory": "dist/client",
     "not_found_handling": "none",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "images": {
-    "binding": "IMAGES"
-  }
+    "binding": "IMAGES",
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+  },
+  "env": {
+    "production": {
+      "name": "matchmatch",
+    },
+    "staging": {
+      "name": "matchmatch-staging",
+    },
+  },
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useEffect } from 'react'
+import { use, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { getUserId } from '@/lib/utils/userId'
@@ -21,11 +21,13 @@ export default function RoomPage({
   const { roomId } = use(params)
   const router = useRouter()
   const userId = getUserId()
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
   const {
     roomStatus,
     currentQuestion,
     questions,
+    totalQuestions,
     setRoom,
     setRoomStatus,
     setOpponent,
@@ -91,6 +93,7 @@ export default function RoomPage({
   // Realtime subscription
   useEffect(() => {
     const channel = supabase.channel(`room:${roomId}`)
+    channelRef.current = channel
 
     channel
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'players' }, (payload) => {
@@ -112,7 +115,8 @@ export default function RoomPage({
         if (payload.userId !== userId) {
           useGameStore.getState().setOpponentAnswer(payload.questionIndex, payload.choice)
 
-          // If both players have answered this question, trigger advance to next question
+          // Opponent just answered (payload is from opponent)
+          // If I have also answered this question, trigger advance to next question
           const { myAnswers } = useGameStore.getState()
           if (myAnswers[payload.questionIndex] !== undefined) {
             fetch('/api/advance-question', {
@@ -192,7 +196,7 @@ export default function RoomPage({
 
       {roomStatus === 'playing' && (
         <div className="w-full max-w-md flex flex-col items-center gap-[var(--space-8)]">
-          <ProgressBar current={currentQuestion + 1} total={questions.length || 5} />
+          <ProgressBar current={currentQuestion + 1} total={totalQuestions || 5} />
           <div className="w-full">
             <QuestionCard />
           </div>

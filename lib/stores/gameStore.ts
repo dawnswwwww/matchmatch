@@ -9,6 +9,7 @@ interface GameState {
   roomId: string
   roomCode: string
   roomStatus: RoomStatus
+  totalQuestions: number
 
   // Players
   myUserId: string
@@ -48,6 +49,7 @@ const initialState = {
   roomId: '',
   roomCode: '',
   roomStatus: 'waiting' as RoomStatus,
+  totalQuestions: 0,
   myUserId: '',
   myPlayerId: '',
   opponentPlayerId: null as string | null,
@@ -65,7 +67,7 @@ export const useGameStore = create<GameState>((set) => ({
   ...initialState,
 
   setRoom: (room) =>
-    set({ roomId: room.id, roomCode: room.code, roomStatus: room.status, currentQuestion: room.current_question }),
+    set({ roomId: room.id, roomCode: room.code, roomStatus: room.status, currentQuestion: room.current_question, totalQuestions: room.total_questions }),
 
   setQuestions: (questions) => set({ questions }),
 

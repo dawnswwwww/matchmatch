@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     // Game finished
     await supabase
       .from('rooms')
-      .update({ status: 'finished', finished_at: new Date().toISOString() })
+      .update({ status: 'finished', finished_at: new Date().toISOString(), current_question: room.total_questions - 1 })
       .eq('id', roomId)
   } else {
     // Advance to next question
