@@ -1,116 +1,88 @@
 'use client'
 
-interface QuestionCardProps {
-  index: number
-  question: string
-  optionA: string
-  optionB: string
-  myChoice: 'a' | 'b' | null
-  opponentChoice: 'a' | 'b' | null
-  match: boolean
-}
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase/client'
+import { useGameStore } from '@/lib/stores/gameStore'
+import OptionButton from './OptionButton'
 
-function OptionBadge({ choice }: { choice: 'a' | 'b' | null }) {
-  if (!choice) return null
-  const isA = choice === 'a'
-  return (
-    <span
-      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold mr-1"
-      style={isA ? { background: 'var(--green)', color: 'var(--green-dark)' } : { background: 'var(--foreground)', color: 'var(--background)' }}
-    >
-      {choice.toUpperCase()}
-    </span>
-  )
-}
+export default function QuestionCard() {
+  const { currentQuestion, questions, myAnswers, opponentAnswers, roomId } = useGameStore()
+  const [entered, setEntered] = useState(false)
 
-export default function QuestionCard({ index, question, optionA, optionB, myChoice, opponentChoice, match }: QuestionCardProps) {
+  const question = questions[currentQuestion]
+  if (!question) return null
+
+  const myAnswer = myAnswers[currentQuestion]
+  const opponentAnswer = opponentAnswers[currentQuestion]
+  const bothAnswered = !!myAnswer && !!opponentAnswer
+  const opponentSelected = !!opponentAnswer
+
+  // Animate in on question change
+  useEffect(() => {
+    setEntered(false)
+    const t = setTimeout(() => setEntered(true), 50)
+    return () => clearTimeout(t)
+  }, [currentQuestion])
+
+  async function handleSelect(choice: 'a' | 'b') {
+    if (bothAnswered) return
+
+    useGameStore.getState().submitMyAnswer(currentQuestion, choice)
+
+    const { myPlayerId, myUserId } = useGameStore.getState()
+    await supabase.from('answers').insert({
+      room_id: roomId,
+      player_id: myPlayerId,
+      question_index: currentQuestion,
+      choice,
+    })
+
+    await supabase.channel(`room:${roomId}`).send({
+      type: 'broadcast',
+      event: 'answer_submitted',
+      payload: { questionIndex: currentQuestion, choice, userId: myUserId },
+    })
+  }
+
   return (
     <div
-      className="flex-shrink-0 w-full snap-center px-[var(--space-6)] py-[var(--space-4)]"
+      className={`
+        w-full flex flex-col gap-[var(--space-6)]
+        transition-all duration-[var(--duration-slow)]
+        ${entered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+      `}
+      style={{
+        transitionTimingFunction: 'var(--ease-out-quart)',
+      }}
     >
-      <div
-        className={`
-          p-[var(--space-5)] rounded-2xl border-2
-          ${match ? 'border-[var(--green)]' : 'border-[var(--surface)]'}
-        `}
-        style={{
-          background: match ? 'oklch(86% 0.08 122 / 0.06)' : 'var(--surface)',
-        }}
+      {/* Question text */}
+      <p
+        className="text-[clamp(20px,4vw,26px)] font-bold text-center leading-tight"
+        style={{ color: 'var(--foreground)' }}
       >
-        {/* 题目编号和匹配状态 */}
-        <div className="flex items-center justify-between mb-[var(--space-4)]">
-          <span className="text-sm font-semibold" style={{ color: 'var(--gray)' }}>
-            第 {index + 1} 题
-          </span>
-          {match ? (
-            <span className="text-xs font-semibold" style={{ color: 'var(--green-dark)' }}>
-              ✓ 默契
-            </span>
-          ) : (
-            <span className="text-xs" style={{ color: 'var(--gray)' }}>
-              ✗ 分歧
-            </span>
-          )}
-        </div>
+        {question.text}
+      </p>
 
-        {/* 题目文本 */}
-        <p className="text-base font-medium mb-[var(--space-5)] leading-snug" style={{ color: 'var(--foreground)' }}>
-          {question}
-        </p>
-
-        {/* 选项区域 */}
-        <div className="flex items-center gap-[var(--space-4)]">
-          {/* 选项 A */}
-          <div className="flex-1">
-            <div
-              className={`
-                p-[var(--space-3)] rounded-xl border-2
-                ${myChoice === 'a' || opponentChoice === 'a' ? 'border-[var(--green)]' : 'border-transparent'}
-              `}
-              style={{ background: myChoice === 'a' ? 'oklch(86% 0.08 122 / 0.15)' : 'var(--background)' }}
-            >
-              <div className="flex items-center mb-[var(--space-1)]">
-                <OptionBadge choice={myChoice === 'a' ? 'a' : null} />
-                <span className="text-xs" style={{ color: 'var(--gray)' }}>你的</span>
-              </div>
-              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                A: {optionA}
-              </p>
-              {opponentChoice === 'a' && (
-                <p className="text-xs mt-[2px]" style={{ color: 'var(--gray)' }}>
-                  对方也选 A
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* VS */}
-          <div className="text-sm font-bold" style={{ color: 'var(--gray)' }}>vs</div>
-
-          {/* 选项 B */}
-          <div className="flex-1">
-            <div
-              className={`
-                p-[var(--space-3)] rounded-xl border-2
-                ${myChoice === 'b' || opponentChoice === 'b' ? 'border-[var(--foreground)]' : 'border-transparent'}
-              `}
-              style={{ background: myChoice === 'b' ? 'oklch(0 0 0 / 0.06)' : 'var(--background)' }}
-            >
-              <div className="flex items-center mb-[var(--space-1)]">
-                <OptionBadge choice={myChoice === 'b' ? 'b' : null} />
-                <span className="text-xs" style={{ color: 'var(--gray)' }}>你的</span>
-              </div>
-              <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                B: {optionB}
-              </p>
-              {opponentChoice === 'b' && (
-                <p className="text-xs mt-[2px]" style={{ color: 'var(--gray)' }}>
-                  对方也选 B
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Options */}
+      <div className="flex flex-col gap-[var(--space-3)]">
+        <OptionButton
+          label="A"
+          text={question.option_a}
+          selected={myAnswer === 'a'}
+          locked={!!myAnswer || bothAnswered}
+          opponentSelected={opponentSelected && opponentAnswer === 'a'}
+          isCorrect={opponentAnswer === 'a'}
+          onClick={() => handleSelect('a')}
+        />
+        <OptionButton
+          label="B"
+          text={question.option_b}
+          selected={myAnswer === 'b'}
+          locked={!!myAnswer || bothAnswered}
+          opponentSelected={opponentSelected && opponentAnswer === 'b'}
+          isCorrect={opponentAnswer === 'b'}
+          onClick={() => handleSelect('b')}
+        />
       </div>
     </div>
   )

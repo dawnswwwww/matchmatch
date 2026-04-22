@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useGameStore } from '@/lib/stores/gameStore'
 import QuestionIndexBar from './QuestionIndexBar'
-import QuestionCard from './QuestionCard'
+import ResultQuestionCard from './ResultQuestionCard'
 import QuestionTabBar from './QuestionTabBar'
 
 interface ResultDetailModalProps {
@@ -115,7 +115,7 @@ export default function ResultDetailModal({ open, onClose }: ResultDetailModalPr
               className="flex-shrink-0 w-full h-full overflow-y-auto snap-center"
               style={{ scrollSnapAlign: 'start' }}
             >
-              <QuestionCard
+              <ResultQuestionCard
                 index={comparisons.indexOf(comp)}
                 question={comp.question}
                 optionA={comp.optionA}
