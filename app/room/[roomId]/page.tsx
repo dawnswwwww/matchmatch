@@ -52,7 +52,11 @@ export default function RoomPage({
       setRoom(room)
 
       // 优先从本地题库加载，fallback 到 Supabase
-      const localQuestions = getLocalQuestionsBySetId(room.question_set_id || 'default')
+      const localQuestions = getLocalQuestionsBySetId(
+        room.question_set_id || 'default',
+        room.total_questions,
+        room.id
+      )
       if (localQuestions) {
         useGameStore.getState().setQuestions(localQuestions)
       } else if (room.question_set_id) {
