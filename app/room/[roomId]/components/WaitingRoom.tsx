@@ -61,7 +61,7 @@ export default function WaitingRoom() {
       <button
         onClick={copyLink}
         className={`
-          py-[var(--space-3)] px-[var(--space-8)] rounded-full font-semibold text-base
+          py-[var(--space-3)] px-[var(--space-8)] rounded-[var(--radius-full)] font-semibold text-base
           transition-all duration-[var(--duration-base)]
           ${mounted ? 'animate-fade-up' : 'opacity-0'}
         `}

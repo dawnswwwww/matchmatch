@@ -30,7 +30,7 @@ export default function QuestionCard({ index, question, optionA, optionB, myChoi
     >
       <div
         className={`
-          p-[var(--space-5)] rounded-2xl border-2
+          p-[var(--space-5)] rounded-[var(--radius-lg)] border-2
           ${match ? 'border-[var(--green)]' : 'border-[var(--surface)]'}
         `}
         style={{
@@ -64,7 +64,7 @@ export default function QuestionCard({ index, question, optionA, optionB, myChoi
           <div className="flex-1">
             <div
               className={`
-                p-[var(--space-3)] rounded-xl border-2
+                p-[var(--space-3)] rounded-[var(--radius-md)] border-2
                 ${myChoice === 'a' || opponentChoice === 'a' ? 'border-[var(--green)]' : 'border-transparent'}
               `}
               style={{ background: myChoice === 'a' ? 'oklch(86% 0.08 122 / 0.15)' : 'var(--background)' }}
@@ -96,7 +96,7 @@ export default function QuestionCard({ index, question, optionA, optionB, myChoi
           <div className="flex-1">
             <div
               className={`
-                p-[var(--space-3)] rounded-xl border-2
+                p-[var(--space-3)] rounded-[var(--radius-md)] border-2
                 ${myChoice === 'b' || opponentChoice === 'b' ? 'border-[var(--foreground)]' : 'border-transparent'}
               `}
               style={{ background: myChoice === 'b' ? 'oklch(0 0 0 / 0.06)' : 'var(--background)' }}

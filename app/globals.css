@@ -11,8 +11,12 @@
   --gray: #868685;
   --surface: #e8ebe6;
 
-  /* Spacing — 4pt base */
-  --space-1: 4px;
+  /* Border Radius — soft, rounded */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;

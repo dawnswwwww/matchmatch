@@ -172,7 +172,7 @@ export default function HomePage() {
           disabled={loading}
           className={`
             w-full max-w-[280px] py-[var(--space-4)] px-[var(--space-8)]
-            rounded-full font-semibold text-lg
+            rounded-[var(--radius-full)] font-semibold text-lg
             transition-transform duration-[var(--duration-base)]
             ${mounted ? 'animate-fade-up' : 'opacity-0'}
           `}
@@ -218,7 +218,7 @@ export default function HomePage() {
             className="
               w-full py-[var(--space-3)] px-[var(--space-4)]
               text-center text-xl tracking-[0.2em] font-semibold
-              bg-[var(--surface)] rounded-2xl
+              bg-[var(--surface)] rounded-[var(--radius-lg)]
               border-2 border-transparent
               transition-all duration-[var(--duration-base)]
               placeholder:text-[var(--gray)] placeholder:tracking-normal placeholder:font-normal

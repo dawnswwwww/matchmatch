@@ -41,7 +41,7 @@ export default function OptionButton({
       onMouseUp={() => setPressed(false)}
       className={`
         w-full py-[var(--space-5)] px-[var(--space-5)]
-        rounded-2xl border-2 font-semibold text-base text-left
+        rounded-[var(--radius-lg)] border-2 font-semibold text-base text-left
         transition-all duration-[var(--duration-base)]
         flex items-center gap-[var(--space-3)]
         select-none
