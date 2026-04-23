@@ -71,20 +71,6 @@ export default function RoomPage({
         }
       }
 
-      // Recover prior answers from database
-      try {
-        const answers = await getAnswersByRoomId(roomId)
-        useGameStore.getState().rehydrateAnswers(answers)
-      } catch (retryErr) {
-        // Retry once on failure
-        try {
-          const answers = await getAnswersByRoomId(roomId)
-          useGameStore.getState().rehydrateAnswers(answers)
-        } catch {
-          // Graceful degradation — skip recovery, user can still answer current question
-        }
-      }
-
       const { data: players, error: playersError } = await supabase
         .from('players')
         .select('*')
@@ -114,6 +100,20 @@ export default function RoomPage({
       }
 
       useGameStore.setState({ myPlayerId: me.id, myUserId: userId })
+
+      // Recover prior answers from database (must run after myPlayerId is set)
+      try {
+        const answers = await getAnswersByRoomId(roomId)
+        useGameStore.getState().rehydrateAnswers(answers)
+      } catch (retryErr) {
+        // Retry once on failure
+        try {
+          const answers = await getAnswersByRoomId(roomId)
+          useGameStore.getState().rehydrateAnswers(answers)
+        } catch {
+          // Graceful degradation — skip recovery, user can still answer current question
+        }
+      }
 
       const opponent = players.find((p) => p.user_id !== userId)
       if (opponent) {
