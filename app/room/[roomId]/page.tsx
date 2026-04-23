@@ -147,10 +147,13 @@ export default function RoomPage({
       })
       .on('broadcast', { event: 'answer_submitted' }, ({ payload }) => {
         if (payload.userId !== userId) {
-          useGameStore.getState().setOpponentAnswer(payload.questionIndex, payload.choice)
+          // Merge guard: only apply if questionIndex is newer than what we have
+          const { opponentAnswers } = useGameStore.getState()
+          const existingAnswer = opponentAnswers[payload.questionIndex]
+          if (existingAnswer === undefined || existingAnswer === null) {
+            useGameStore.getState().setOpponentAnswer(payload.questionIndex, payload.choice)
+          }
 
-          // Opponent just answered (payload is from opponent)
-          // If I have also answered this question, trigger advance to next question
           const { myAnswers } = useGameStore.getState()
           if (myAnswers[payload.questionIndex] !== undefined) {
             fetch('/api/advance-question', {
@@ -162,7 +165,10 @@ export default function RoomPage({
         }
       })
       .on('broadcast', { event: 'question_result' }, ({ payload }) => {
-        useGameStore.getState().setOpponentAnswer(payload.questionIndex, payload.choice)
+        const { opponentAnswers } = useGameStore.getState()
+        if (opponentAnswers[payload.questionIndex] === undefined) {
+          useGameStore.getState().setOpponentAnswer(payload.questionIndex, payload.choice)
+        }
         useGameStore.getState().setOpponentReady(true)
       })
       .on('broadcast', { event: 'rematch:vote' }, ({ payload }) => {
