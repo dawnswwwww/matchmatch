@@ -9,7 +9,7 @@ interface IndicatorCardProps {
 export default function IndicatorCard({ label, value, description }: IndicatorCardProps) {
   return (
     <div
-      className="flex-1 min-w-0 p-[var(--space-3)] rounded-[var(--radius-md)] text-center"
+      className="flex-1 min-w-0 p-[var(--space-3)] rounded-2xl text-center"
       style={{ background: 'var(--surface)' }}
     >
       <div

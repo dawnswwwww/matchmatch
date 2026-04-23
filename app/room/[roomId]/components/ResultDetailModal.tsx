@@ -80,7 +80,7 @@ export default function ResultDetailModal({ open, onClose }: ResultDetailModalPr
       >
         <button
           onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-full)] text-lg font-bold"
+          className="w-8 h-8 flex items-center justify-center rounded-full text-lg font-bold"
           style={{ color: 'var(--foreground)' }}
           aria-label="关闭"
         >

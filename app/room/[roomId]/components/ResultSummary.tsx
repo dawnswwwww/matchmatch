@@ -74,7 +74,7 @@ export default function ResultSummary({ onOpenDetail, onShare, onNewGame }: Resu
         onClick={onOpenDetail}
         className={`
           w-full max-w-[320px] py-[var(--space-3)] px-[var(--space-6)]
-          rounded-[var(--radius-full)] font-semibold text-base
+          rounded-full font-semibold text-base
           transition-all duration-[var(--duration-base)]
           ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
         `}
@@ -102,7 +102,7 @@ export default function ResultSummary({ onOpenDetail, onShare, onNewGame }: Resu
       >
         <button
           onClick={onShare}
-          className="flex-1 py-[var(--space-3)] px-[var(--space-6)] rounded-[var(--radius-full)] font-semibold text-base transition-all duration-[var(--duration-base)]"
+          className="flex-1 py-[var(--space-3)] px-[var(--space-6)] rounded-full font-semibold text-base transition-all duration-[var(--duration-base)]"
           style={{ background: 'var(--surface)', color: 'var(--foreground)' }}
           onMouseEnter={e => { e.currentTarget.style.background = 'var(--foreground)', e.currentTarget.style.color = 'var(--background)' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)', e.currentTarget.style.color = 'var(--foreground)' }}
@@ -111,7 +111,7 @@ export default function ResultSummary({ onOpenDetail, onShare, onNewGame }: Resu
         </button>
         <button
           onClick={onNewGame}
-          className="flex-1 py-[var(--space-3)] px-[var(--space-6)] rounded-[var(--radius-full)] font-semibold text-base transition-all duration-[var(--duration-base)]"
+          className="flex-1 py-[var(--space-3)] px-[var(--space-6)] rounded-full font-semibold text-base transition-all duration-[var(--duration-base)]"
           style={{ background: 'var(--green)', color: 'var(--green-dark)' }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)' }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}

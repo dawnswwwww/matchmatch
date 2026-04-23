@@ -25,16 +25,16 @@ export default function RematchDialog() {
   }
 
   return (
-    <div className="w-full border border-[rgba(14,15,12,0.12)] rounded-[var(--radius-lg)] p-6">
+    <div className="w-full border border-[rgba(14,15,12,0.12)] rounded-2xl p-6">
       <h3 className="text-lg font-semibold mb-4 text-center">再来一次？</h3>
       <div className="flex gap-3 justify-center">
         <button
           onClick={() => handleVote(true)}
           disabled={myRematchChoice !== null}
-          className={`py-2 px-6 rounded-[var(--radius-full)] font-semibold transition-all ${
+          className={`py-2 px-6 rounded-full font-semibold transition-all ${
             myRematchChoice === true
-              ? 'bg-[var(--green)] text-[var(--green-dark)]'
-              : 'bg-[var(--surface)] text-[var(--foreground)]'
+              ? 'bg-[#9fe870] text-[#163300]'
+              : 'bg-[rgba(22,51,0,0.08)] text-[#0e0f0c]'
           }`}
         >
           {myRematchChoice === true ? '✓ 等待中...' : '再来一次'}
@@ -42,10 +42,10 @@ export default function RematchDialog() {
         <button
           onClick={() => handleVote(false)}
           disabled={myRematchChoice !== null}
-          className={`py-2 px-6 rounded-[var(--radius-full)] font-semibold transition-all ${
+          className={`py-2 px-6 rounded-full font-semibold transition-all ${
             myRematchChoice === false
-              ? 'bg-[var(--foreground)] text-[var(--background)]'
-              : 'bg-[var(--surface)] text-[var(--foreground)]'
+              ? 'bg-[rgba(208,50,56,0.1)] text-[#d03238]'
+              : 'bg-[rgba(22,51,0,0.08)] text-[#0e0f0c]'
           }`}
         >
           {myRematchChoice === false ? '已跳过' : '不用了'}
