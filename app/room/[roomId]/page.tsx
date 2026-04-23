@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { getUserId } from '@/lib/utils/userId'
 import { useGameStore } from '@/lib/stores/gameStore'
+import { getAnswersByRoomId } from '@/lib/supabase/queries/answers'
 import { getLocalQuestionsBySetId } from '@/lib/questions/adapter'
 import WaitingRoom from './components/WaitingRoom'
 import QuestionCard from './components/QuestionCard'
@@ -67,6 +68,20 @@ export default function RoomPage({
           .order('display_order')
         if (data) {
           useGameStore.getState().setQuestions(data)
+        }
+      }
+
+      // Recover prior answers from database
+      try {
+        const answers = await getAnswersByRoomId(roomId)
+        useGameStore.getState().rehydrateAnswers(answers)
+      } catch (retryErr) {
+        // Retry once on failure
+        try {
+          const answers = await getAnswersByRoomId(roomId)
+          useGameStore.getState().rehydrateAnswers(answers)
+        } catch {
+          // Graceful degradation — skip recovery, user can still answer current question
         }
       }
 
