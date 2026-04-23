@@ -8,6 +8,7 @@ import { calculateScore, getScoreLabel } from '@/lib/utils/score'
 import { getLocalQuestionsBySetId } from '@/lib/questions/adapter'
 import ScoreDisplay from './components/ScoreDisplay'
 import ComparisonList from './components/ComparisonList'
+import Button from '@/components/ui/Button'
 
 interface Question {
   id: string
@@ -167,34 +168,20 @@ export default function ResultClient({ resultId, initialData }: ResultClientProp
         )}
 
         <div className="flex flex-col sm:flex-row gap-[var(--space-3)] w-full max-w-[320px]">
-          <button
+          <Button
+            variant="secondary"
             onClick={handleShare}
-            className="
-              flex-1 py-[var(--space-3)] px-[var(--space-6)]
-              rounded-full font-semibold text-base
-              transition-all duration-[var(--duration-base)]
-            "
-            style={{ background: 'var(--surface)', color: 'var(--foreground)' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'var(--foreground)', e.currentTarget.style.color = 'var(--background)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)', e.currentTarget.style.color = 'var(--foreground)' }}
+            className="w-full"
           >
             分享结果
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="primary"
             onClick={handleNewGame}
-            className="
-              flex-1 py-[var(--space-3)] px-[var(--space-6)]
-              rounded-full font-semibold text-base
-              transition-all duration-[var(--duration-base)]
-            "
-            style={{ background: 'var(--green)', color: 'var(--green-dark)' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.03)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
-            onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.97)' }}
-            onMouseUp={e => { e.currentTarget.style.transform = 'scale(1.03)' }}
+            className="w-full"
           >
             我也来测
-          </button>
+          </Button>
         </div>
       </div>
     </main>

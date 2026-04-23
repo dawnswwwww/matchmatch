@@ -6,6 +6,10 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { getUserId } from '@/lib/utils/userId'
 import { generateRoomCode } from '@/lib/utils/roomCode'
+import Button from '@/components/ui/Button'
+import RoomCodeInput from '@/components/ui/RoomCodeInput'
+import { LayoutGroup, motion } from 'motion/react'
+import RotatingText from '@/components/RotatingText'
 
 export default function HomePage() {
   const router = useRouter()
@@ -109,21 +113,33 @@ export default function HomePage() {
       <div className="relative z-10 flex flex-col items-center text-center w-full max-w-[400px]">
 
         {/* Headline — fluid, massive */}
-        <h1
-          className={`
-            text-[clamp(64px,18vw,120px)] font-black leading-[0.85]
-            tracking-[-0.03em] mb-[var(--space-4)]
-            ${mounted ? 'animate-fade-up' : 'opacity-0'}
-          `}
-          style={{
-            fontFamily: 'Inter, sans-serif',
-            animationDelay: mounted ? '0ms' : '0ms',
-          }}
-        >
-          Match
-          <br />
-          <span style={{ color: 'var(--green)' }}>Match</span>
-        </h1>
+        <LayoutGroup>
+          <div className="mb-[var(--space-4)] relative flex flex-col items-start" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <motion.span
+              layout
+              transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+              className="rounded-xl px-2 py-1 mb-2"
+            >
+              <span className="text-[clamp(48px,14vw,96px)] font-black leading-[0.85] tracking-[-0.03em]">
+                Match
+              </span>
+            </motion.span>
+            <motion.span layout className="overflow-hidden rounded-xl px-2 py-1" style={{ background: 'oklch(86% 0.12 122 / 0.2)' }}>
+              <RotatingText
+                texts={['Match', 'Minds', 'Vibes', 'Fun']}
+                splitBy="characters"
+                staggerDuration={0.06}
+                rotationInterval={2000}
+                transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '-120%' }}
+                mainClassName="text-[clamp(48px,14vw,96px)] leading-[0.85] tracking-[-0.03em]"
+                elementLevelClassName="font-black text-[var(--green)]"
+              />
+            </motion.span>
+          </div>
+        </LayoutGroup>
 
         {/* Subheadline */}
         <p
@@ -150,14 +166,11 @@ export default function HomePage() {
               <button
                 key={n}
                 onClick={() => setQuestionCount(n)}
-                className={`
-                  w-10 h-10 rounded-full text-sm font-semibold
-                  transition-all duration-[var(--duration-base)]
-                `}
+                className="w-10 h-10 rounded-full text-sm font-semibold transition-all duration-[var(--duration-base)] border-[3px]"
                 style={
                   questionCount === n
-                    ? { background: 'var(--green)', color: 'var(--green-dark)' }
-                    : { background: 'var(--surface)', color: 'var(--foreground)' }
+                    ? { background: 'var(--green)', color: 'var(--green-dark)', borderColor: 'var(--green)', boxShadow: '3px 3px 0 0 var(--green-dark)' }
+                    : { background: 'var(--surface)', color: 'var(--foreground)', borderColor: 'var(--foreground)', boxShadow: '3px 3px 0 0 var(--foreground)' }
                 }
               >
                 {n}
@@ -167,27 +180,14 @@ export default function HomePage() {
         </div>
 
         {/* Primary CTA */}
-        <button
+        <Button
+          variant="primary"
           onClick={handleCreateRoom}
           disabled={loading}
-          className={`
-            w-full max-w-[280px] py-[var(--space-4)] px-[var(--space-8)]
-            rounded-full font-semibold text-lg
-            transition-transform duration-[var(--duration-base)]
-            ${mounted ? 'animate-fade-up' : 'opacity-0'}
-          `}
-          style={{
-            background: 'var(--green)',
-            color: 'var(--green-dark)',
-            animationDelay: mounted ? '160ms' : '160ms',
-          }}
-          onMouseEnter={e => { if (!loading) e.currentTarget.style.transform = 'scale(1.04)' }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
-          onMouseDown={e => { if (!loading) e.currentTarget.style.transform = 'scale(0.97)' }}
-          onMouseUp={e => { if (!loading) e.currentTarget.style.transform = 'scale(1.04)' }}
+          className={`create-room-btn ${mounted ? 'animate-fade-up' : 'opacity-0'}`}
         >
           {loading ? '创建中...' : '创建房间'}
-        </button>
+        </Button>
 
         {/* Divider */}
         <div
@@ -210,53 +210,21 @@ export default function HomePage() {
           `}
           style={{ animationDelay: mounted ? '320ms' : '320ms' }}
         >
-          <input
+          <RoomCodeInput
             value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
-            placeholder="输入房间号"
+            onChange={setJoinCode}
             maxLength={6}
-            className="
-              w-full py-[var(--space-3)] px-[var(--space-4)]
-              text-center text-xl tracking-[0.2em] font-semibold
-              bg-[var(--surface)] rounded-2xl
-              border-2 border-transparent
-              transition-all duration-[var(--duration-base)]
-              placeholder:text-[var(--gray)] placeholder:tracking-normal placeholder:font-normal
-              focus:border-[var(--green)] focus:outline-none
-            "
+            error={error}
           />
-          <button
+          <Button
+            variant="secondary"
             onClick={handleJoinRoom}
             disabled={loading || joinCode.trim().length < 6}
-            className="
-              w-full py-[var(--space-3)] px-[var(--space-8)]
-              rounded-full font-semibold text-lg
-              transition-all duration-[var(--duration-base)]
-              border-2
-              disabled:opacity-40 disabled:cursor-not-allowed
-            "
-            style={{
-              borderColor: 'var(--foreground)',
-              color: 'var(--foreground)',
-            }}
-            onMouseEnter={e => { if (!loading && joinCode.length >= 6) e.currentTarget.style.background = 'var(--foreground)', e.currentTarget.style.color = 'var(--background)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent', e.currentTarget.style.color = 'var(--foreground)' }}
-            onMouseDown={e => { if (!loading && joinCode.length >= 6) e.currentTarget.style.transform = 'scale(0.97)' }}
-            onMouseUp={e => { if (!loading && joinCode.length >= 6) e.currentTarget.style.transform = 'scale(1)' }}
+            className="w-full"
           >
             加入
-          </button>
+          </Button>
         </div>
-
-        {/* Error */}
-        {error && (
-          <p
-            className="mt-[var(--space-4)] text-sm font-medium animate-fade-in"
-            style={{ color: '#d03238' }}
-          >
-            {error}
-          </p>
-        )}
       </div>
 
       {/* Footer tagline */}

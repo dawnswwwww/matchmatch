@@ -70,8 +70,11 @@ export default function ResultDetailModal({ open, onClose }: ResultDetailModalPr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col"
-      style={{ background: 'var(--background)' }}
+      className="fixed inset-0 z-50 flex flex-col animate-fade-in"
+      style={{
+        background: 'var(--background)',
+        animation: 'fade-in var(--duration-slow) var(--ease-out-quart) both',
+      }}
     >
       {/* 顶部栏 */}
       <div

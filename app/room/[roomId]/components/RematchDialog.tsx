@@ -1,12 +1,19 @@
 // app/room/[roomId]/components/RematchDialog.tsx
 'use client'
 
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { useGameStore } from '@/lib/stores/gameStore'
+import Button from '@/components/ui/Button'
 
 export default function RematchDialog() {
   const { roomId, myRematchChoice, opponentRematchChoice, myPlayerId } = useGameStore()
   const { myUserId } = useGameStore.getState()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   async function handleVote(vote: boolean) {
     useGameStore.getState().setRematchChoice(vote)
@@ -24,38 +31,70 @@ export default function RematchDialog() {
     })
   }
 
+  const isWaiting = myRematchChoice !== null
+
   return (
-    <div className="w-full border border-[rgba(14,15,12,0.12)] rounded-2xl p-6">
-      <h3 className="text-lg font-semibold mb-4 text-center">再来一次？</h3>
-      <div className="flex gap-3 justify-center">
-        <button
-          onClick={() => handleVote(true)}
-          disabled={myRematchChoice !== null}
-          className={`py-2 px-6 rounded-full font-semibold transition-all ${
-            myRematchChoice === true
-              ? 'bg-[#9fe870] text-[#163300]'
-              : 'bg-[rgba(22,51,0,0.08)] text-[#0e0f0c]'
-          }`}
-        >
-          {myRematchChoice === true ? '✓ 等待中...' : '再来一次'}
-        </button>
-        <button
-          onClick={() => handleVote(false)}
-          disabled={myRematchChoice !== null}
-          className={`py-2 px-6 rounded-full font-semibold transition-all ${
-            myRematchChoice === false
-              ? 'bg-[rgba(208,50,56,0.1)] text-[#d03238]'
-              : 'bg-[rgba(22,51,0,0.08)] text-[#0e0f0c]'
-          }`}
-        >
-          {myRematchChoice === false ? '已跳过' : '不用了'}
-        </button>
+    <div
+      className={`
+        w-full rounded-2xl p-[var(--space-6)]
+        transition-all duration-[var(--duration-slow)]
+        ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
+      `}
+      style={{
+        transitionDelay: mounted ? '300ms' : '300ms',
+        transitionTimingFunction: 'var(--ease-out-quart)',
+        background: 'oklch(86% 0.08 122 / 0.12)',
+        border: '2px solid oklch(86% 0.12 122 / 0.25)',
+      }}
+    >
+      <h3
+        className="text-lg font-bold mb-[var(--space-5)] text-center tracking-wide"
+        style={{ color: 'var(--green-dark)' }}
+      >
+        再来一次？
+      </h3>
+
+      <div className="flex gap-[var(--space-3)] justify-center">
+        <div className="relative">
+          <Button
+            variant={myRematchChoice === true ? 'primary' : 'secondary'}
+            onClick={() => handleVote(true)}
+            disabled={isWaiting}
+            className="min-w-[120px]"
+          >
+            {myRematchChoice === true ? '✓' : '再来一次'}
+          </Button>
+          {opponentRematchChoice === true && (
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-lg">👤</div>
+          )}
+          {myRematchChoice === true && !opponentRematchChoice && (
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
+              <span className="text-xs" style={{ color: 'var(--gray)' }}>等待中...</span>
+              <span className="text-lg animate-pulse">⏳</span>
+            </div>
+          )}
+        </div>
+
+        <div className="relative">
+          <Button
+            variant={myRematchChoice === false ? 'primary' : 'secondary'}
+            onClick={() => handleVote(false)}
+            disabled={isWaiting}
+            className="min-w-[120px]"
+          >
+            {myRematchChoice === false ? '✓' : '不用了'}
+          </Button>
+          {opponentRematchChoice === false && (
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-lg">👤</div>
+          )}
+          {myRematchChoice === false && !opponentRematchChoice && (
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
+              <span className="text-xs" style={{ color: 'var(--gray)' }}>等待中...</span>
+              <span className="text-lg animate-pulse">⏳</span>
+            </div>
+          )}
+        </div>
       </div>
-      {opponentRematchChoice !== null && (
-        <p className="text-center text-sm text-[#868685] mt-3">
-          朋友已选择 {opponentRematchChoice ? '"再来一次"' : '"不用了"'}
-        </p>
-      )}
     </div>
   )
 }

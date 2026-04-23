@@ -2,10 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { useGameStore } from '@/lib/stores/gameStore'
+import Button from '@/components/ui/Button'
+import DecryptedText from '@/components/DecryptedText'
 
 export default function WaitingRoom() {
   const { roomCode, roomId } = useGameStore()
   const [copied, setCopied] = useState(false)
+  const [codeCopied, setCodeCopied] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -17,6 +20,12 @@ export default function WaitingRoom() {
     await navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function copyCode() {
+    await navigator.clipboard.writeText(roomCode)
+    setCodeCopied(true)
+    setTimeout(() => setCodeCopied(false), 2000)
   }
 
   return (
@@ -34,16 +43,17 @@ export default function WaitingRoom() {
           }}
         />
 
-        <div
-          className={`
-            relative text-[clamp(48px,14vw,80px)] font-black leading-[0.85]
-            tracking-[0.15em] select-all
-            ${mounted ? 'animate-scale-in' : 'opacity-0'}
-          `}
-          style={{ fontFamily: 'Inter, sans-serif' }}
-        >
-          {roomCode}
-        </div>
+        <DecryptedText
+          key={roomCode}
+          text={roomCode}
+          speed={50}
+          animateOn="view"
+          sequential
+          revealDirection="start"
+          className="text-[clamp(48px,14vw,80px)] font-black leading-[0.85] tracking-[0.15em] select-all"
+          parentClassName={`relative ${mounted ? 'animate-scale-in' : 'opacity-0'}`}
+          encryptedClassName="text-[var(--gray)]"
+        />
       </div>
 
       {/* Label */}
@@ -58,30 +68,22 @@ export default function WaitingRoom() {
       </p>
 
       {/* Copy link button */}
-      <button
+      <Button
+        variant="primary"
         onClick={copyLink}
-        className={`
-          py-[var(--space-3)] px-[var(--space-8)] rounded-full font-semibold text-base
-          transition-all duration-[var(--duration-base)]
-          ${mounted ? 'animate-fade-up' : 'opacity-0'}
-        `}
-        style={{
-          animationDelay: mounted ? '180ms' : '180ms',
-          background: copied ? 'var(--green)' : 'var(--surface)',
-          color: copied ? 'var(--green-dark)' : 'var(--foreground)',
-          transitionTimingFunction: 'var(--ease-out-quart)',
-        }}
-        onMouseEnter={e => {
-          if (!copied) e.currentTarget.style.background = 'var(--foreground)',
-            e.currentTarget.style.color = 'var(--background)'
-        }}
-        onMouseLeave={e => {
-          if (!copied) e.currentTarget.style.background = 'var(--surface)',
-            e.currentTarget.style.color = 'var(--foreground)'
-        }}
+        className={`copy-link-btn ${mounted ? 'animate-fade-up' : 'opacity-0'}`}
       >
         {copied ? '已复制 ✓' : '复制链接'}
-      </button>
+      </Button>
+
+      {/* Copy code button */}
+      <Button
+        variant="secondary"
+        onClick={copyCode}
+        className={`copy-code-btn ${mounted ? 'animate-fade-up' : 'opacity-0'}`}
+      >
+        {codeCopied ? '已复制 ✓' : '复制房间号'}
+      </Button>
 
       {/* Waiting indicator */}
       <div
