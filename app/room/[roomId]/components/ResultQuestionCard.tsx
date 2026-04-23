@@ -76,9 +76,14 @@ export default function QuestionCard({ index, question, optionA, optionB, myChoi
               <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                 A: {optionA}
               </p>
-              {opponentChoice === 'a' && (
+              {opponentChoice === 'a' && myChoice === 'a' && (
                 <p className="text-xs mt-[2px]" style={{ color: 'var(--gray)' }}>
                   对方也选 A
+                </p>
+              )}
+              {opponentChoice === 'a' && myChoice !== 'a' && (
+                <p className="text-xs mt-[2px]" style={{ color: 'var(--gray)' }}>
+                  对方选 A
                 </p>
               )}
             </div>
@@ -103,9 +108,14 @@ export default function QuestionCard({ index, question, optionA, optionB, myChoi
               <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
                 B: {optionB}
               </p>
-              {opponentChoice === 'b' && (
+              {opponentChoice === 'b' && myChoice === 'b' && (
                 <p className="text-xs mt-[2px]" style={{ color: 'var(--gray)' }}>
                   对方也选 B
+                </p>
+              )}
+              {opponentChoice === 'b' && myChoice !== 'b' && (
+                <p className="text-xs mt-[2px]" style={{ color: 'var(--gray)' }}>
+                  对方选 B
                 </p>
               )}
             </div>
