@@ -43,6 +43,7 @@ interface GameState {
   setOpponentRematchChoice: (choice: boolean) => void
   resetForRematch: () => void
   reset: () => void
+  rehydrateAnswers: (answers: Array<{ player_id: string; question_index: number; choice: 'a' | 'b' }>) => void
 }
 
 const initialState = {
@@ -82,6 +83,20 @@ export const useGameStore = create<GameState>((set) => ({
     set((state) => ({
       myAnswers: { ...state.myAnswers, [questionIndex]: choice },
     })),
+
+  rehydrateAnswers: (answers) =>
+    set((state) => {
+      const myAnswers = { ...state.myAnswers }
+      const opponentAnswers = { ...state.opponentAnswers }
+      answers.forEach((a) => {
+        if (a.player_id === state.myPlayerId) {
+          myAnswers[a.question_index] = a.choice
+        } else {
+          opponentAnswers[a.question_index] = a.choice
+        }
+      })
+      return { myAnswers, opponentAnswers }
+    }),
 
   setOpponentAnswer: (questionIndex, choice) =>
     set((state) => ({
